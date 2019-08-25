@@ -29,6 +29,4 @@
 ##### SQL隔离级别
 <div align=center><img src="./pics/sql_isolation.jpg"></div>
 # MySQL锁
-## MySQL锁的类型
-## MySQL锁的算法
-## 简单演示
+## 详见第九章_锁.md
