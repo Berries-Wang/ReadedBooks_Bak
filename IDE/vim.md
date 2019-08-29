@@ -38,6 +38,6 @@
 </ul>
 ```
 + let mapleader=","  赋值操作 
-+ map &lt;leader&gt;w :w!<CR> 配合let mapleader="," 则在普通模式下，输入逗号(,)及w就可以对文档进行保存了。 &lt;leader&gt;就是一个前缀，输入命令时要加这个前缀然后是&lt;leader&gt;后面的指令（自定义的，这里定义的是w）.这个&lt;leader&gt;的是可以配置的，在脚本里面这样写，let mapleader=','，然后下次你输入,ee就执行命令了(这里是w!)。
++ map &lt;leader&gt;w :w!<CR> 配合let mapleader="," 则在普通模式下，输入逗号(,)及w就可以对文档进行保存了。 &lt;leader&gt;就是一个前缀，输入命令时要加这个前缀然后是&lt;leader&gt;后面的指令（自定义的，这里定义的是w）.这个&lt;leader&gt;的是可以配置的，在脚本里面这样写，let mapleader=','，然后下次你输入,w就执行命令了(这里是w!)。
 
 
