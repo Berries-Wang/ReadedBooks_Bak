@@ -29,7 +29,7 @@
 + set number 显示行号
 + set autoindent 复制上一行的缩进到下一行
 + set smartindent 
-+ map &lt;F3> i&lt;ul>&lt;CR>&lt;Space>&lt;Space>&lt;li>&lt;/li>&lt;CR>&lt;Esc>I&lt;/ul>&lt;Esc>kcit(转义)   原文 map <F3> i<ul><CR><Space><Space><li></li><CR><Esc>I</ul><Esc>kcit
++ map &lt;F3> i&lt;ul>&lt;CR>&lt;Space>&lt;Space>&lt;li>&lt;/li>&lt;CR>&lt;Esc>I&lt;/ul>&lt;Esc>kcit 
   - map 即 定制快捷键。如上 定义了一个快捷键F3.**F3后面就是一系列的操作** 首先 i,进入插入模式，在输入&lt;ul&gt;在按回车(CR)........
   - 即:在默认模式下按F3就是输出：
 ```html
