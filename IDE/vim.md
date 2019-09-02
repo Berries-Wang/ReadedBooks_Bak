@@ -39,5 +39,18 @@
 ```
 + let mapleader=","  赋值操作 
 + map &lt;leader&gt;w :w!<CR> 配合let mapleader="," 则在普通模式下，输入逗号(,)及w就可以对文档进行保存了。 &lt;leader&gt;就是一个前缀，输入命令时要加这个前缀然后是&lt;leader&gt;后面的指令（自定义的，这里定义的是w）.这个&lt;leader&gt;的是可以配置的，在脚本里面这样写，let mapleader=','，然后下次你输入,w就执行命令了(这里是w!)。
+### 删除、复制、粘贴 
+windows中与vim中的区别：
+<div><img src = "./pics/vim_d_c_c.jpg" style="text-align:center" alt="复制、粘贴、删除/>"</div>
++ 在vim中，复制、粘贴、删除都是使用操作的首字母
 
+#### Vim模式
+<div><img src = "./pics/vim_mode.jpg" style="text-align:center" alt="复制、粘贴、删除/>"</div>
 
+#### vim特性
+##### 寄存器
+##### 
+
+## 快捷键
++ shift + i 插入模式，且回到行首
++ A  回到行尾
