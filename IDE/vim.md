@@ -210,6 +210,7 @@ motion---表示操作范围的指令
 |ctrl + w n >|增加n个字符的宽度|
 ##### 标签
 标签就是容纳一系列窗口的容器  <div><img src = "./pics/vim_tab.jpeg" style="text-align:center" alt="标签"/></div>
+
 |指令| 含义|
 |---|---|
 |:tabnew|创建新标签页|
