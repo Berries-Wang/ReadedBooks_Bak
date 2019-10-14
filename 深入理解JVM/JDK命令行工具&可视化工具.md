@@ -18,6 +18,19 @@
 
 ### 原理
 + 当java进程启动，会在System.getProperties("java.io.tmpdir);(在Linux中为/tmp/hsperfdata_{userName}/)下生成文件。文件名就是java进程的PID.至于类名、JVM参数等都可以通过解析这个文件来获取
-## 
+## jstat(JVM Statics Monitoring Tool)虚拟机统计信息监视工具
++ 用于监视虚拟机各种运行状态信息的命令行工具。可以显示本地或者远程虚拟机进程中的类加载、内存、垃圾收集、JIT编译等运行数据
++ 格式： jstat [ option lvmid [ interval [s|ms] [ count ]]]
+   - lvmid 虚拟机进程ID
+   - interval:查询间隔
+   - count:查询数量
+#### option
++ 类装载
+  - -class 
+    + 输出:Loaded、Bytes、Unloaded、Bytes、Time
+    + 解释:已加载Class数量、所占空间大小、未加载Class数量、所占空间大小、时间
++ 垃圾收集
+  - -gc
++ 运行期编译状况
 ## 
 ##
