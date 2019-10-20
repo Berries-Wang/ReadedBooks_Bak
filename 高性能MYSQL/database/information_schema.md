@@ -4,7 +4,6 @@
 ### COLLATIONS                            
 ### COLLATION_CHARACTER_SET_APPLICABILITY 
 ### COLUMNS 
-|--------------------------|---------------------|------|-----|---------|-------+
 | Field                    | Type                | Null | Key | Default | comment |
 |--------------------------|---------------------|------|-----|---------|-------|
 | TABLE_CATALOG            | varchar(512)        | NO   |     |         | 包含该列的表所属的目录的名称。该值始终为def。|
@@ -27,8 +26,7 @@
 | EXTRA                    | varchar(30)         | NO   |     |         |有关给定字段的任何其他可用信息|
 | PRIVILEGES               | varchar(80)         | NO   |     |         |您对该字段的权限|
 | COLUMN_COMMENT           | varchar(1024)       | NO   |     |         |字段定义中包含的任何注释|
-| GENERATION_EXPRESSION    | longtext            | NO   |     | NULL    |对于生成的字段，显示用于计算列值的表达式|
-|--------------------------|---------------------|------|-----|---------|-------|                       
+| GENERATION_EXPRESSION    | longtext            | NO   |     | NULL    |对于生成的字段，显示用于计算列值的表达式|                 
 ### COLUMN_PRIVILEGES                     
 ### ENGINES                               
 ### EVENTS                                
