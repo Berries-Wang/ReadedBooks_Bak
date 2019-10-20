@@ -6,7 +6,7 @@
 ### COLUMNS 
 | Field                    | Type                | Null | Key | Default | comment |
 |--------------------------|---------------------|------|-----|---------|-------|
-| TABLE_CATALOG            | varchar(512)        | NO   |     |         | 包含该列的表所属的目录的名称。该值始终为def。|
+| TABLE_CATALOG            | varchar(512)        | NO   |     |         |包含该列的表所属的目录的名称。该值始终为def。|
 | TABLE_SCHEMA             | varchar(64)         | NO   |     |         |包含字段所在数据库的名称      |
 | TABLE_NAME               | varchar(64)         | NO   |     |         |包含字段所在表的名称       |
 | COLUMN_NAME              | varchar(64)         | NO   |     |         |字段的名称       |
@@ -14,14 +14,14 @@
 | COLUMN_DEFAULT           | longtext            | YES  |     | NULL    |字段的默认值       |
 | IS_NULLABLE              | varchar(3)          | NO   |     |         |字段可为空性       |
 | DATA_TYPE                | varchar(64)         | NO   |     |         |字段数据类型       |
-| CHARACTER_MAXIMUM_LENGTH | bigint(21) unsigned | YES  |     | NULL    |值包含类型名称以及可能的其他信息，例如精度或长度       |
-| CHARACTER_OCTET_LENGTH   | bigint(21) unsigned | YES  |     | NULL    |对于字符串列，最大长度（以字符为单位）       |
-| NUMERIC_PRECISION        | bigint(21) unsigned | YES  |     | NULL    |对于字符串列，最大长度（以字节为单位）       |
-| NUMERIC_SCALE            | bigint(21) unsigned | YES  |     | NULL    |对于数字字段，数字精度|
-| DATETIME_PRECISION       | bigint(21) unsigned | YES  |     | NULL    |对于时间字段，小数秒精度 |
+| CHARACTER_MAXIMUM_LENGTH | bigint(21) unsigned | YES  |     | NULL    |对于字符串列，最大长度（以字符为单位）。 |
+| CHARACTER_OCTET_LENGTH   | bigint(21) unsigned | YES  |     | NULL    |对于字符串列，最大长度（以字节为单位）。 |
+| NUMERIC_PRECISION        | bigint(21) unsigned | YES  |     | NULL    |对于数字字段，数字精度|
+| NUMERIC_SCALE            | bigint(21) unsigned | YES  |     | NULL    |对于数字字段，数字刻度|
+| DATETIME_PRECISION       | bigint(21) unsigned | YES  |     | NULL    |对于时间字段，小数秒精度。 |
 | CHARACTER_SET_NAME       | varchar(32)         | YES  |     | NULL    |对于字符串字段，字符集名称|
 | COLLATION_NAME           | varchar(32)         | YES  |     | NULL    |对于字符串字段，排序规则名称       |
-| COLUMN_TYPE              | longtext            | NO   |     | NULL    |字段数据类型|
+| COLUMN_TYPE              | longtext            | NO   |     | NULL    |值包含类型名称以及可能的其他信息，例如精度或长度。|
 | COLUMN_KEY               | varchar(3)          | NO   |     |         |名称是否已建立索引|
 | EXTRA                    | varchar(30)         | NO   |     |         |有关给定字段的任何其他可用信息|
 | PRIVILEGES               | varchar(80)         | NO   |     |         |您对该字段的权限|
