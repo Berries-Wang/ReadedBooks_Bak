@@ -89,6 +89,53 @@
    + -flag name=value
      - sets the given command line flag to the specified value.
 ## jmap
++ 生成堆转储快照
++ 格式：
+  - jmap [option] vmid
++ option
+   - -dump:生成java堆转储快照**jmap -dump:format=b,file=18412.dump 18412**
+   - -finalizerinfo：显示在F-Queue中等待Finalizer线程执行finalize方法的对象。
+   - -heap:显示java堆详细信息，如使用哪种回收器、参数配置、分代情况等
+   - -histo:显示堆中对象统计信息
+   - -F:当虚拟机进程对-dump选项没有响应，使用这个选项强制生成
 ## jhat
++ 与jmap搭配使用，分析java堆存储快照
++ 格式：
+  - jhat dump文件**如:jhat 18412.dump**
 ## jstack
-## 
++ 生成虚拟机当前时刻的线程快照，便于快速定位线程等待时间长的原因
++ 格式：
+    - jstack [option] vmid
++ option
+   - -F 强制输出线程堆栈
+   - -l 除堆栈外，还输出锁信息
+   - -m 如何使用了本地方法，还输出C/C++堆栈信息 
++ 示例:
+```java
+Found one Java-level deadlock:
+=============================
+"Thread-1":
+  waiting to lock monitor 0x00007f9b140062c8 (object 0x00000000d7163ca0, a java.lang.Object),
+  which is held by "Thread-0"
+"Thread-0":
+  waiting to lock monitor 0x00007f9b14004e28 (object 0x00000000d7163cb0, a java.lang.Object),
+  which is held by "Thread-1"
+
+Java stack information for the threads listed above:
+===================================================
+"Thread-1":
+	at link.bosswang.test.Main.lambda$main$1(Main.java:42)
+	- waiting to lock <0x00000000d7163ca0> (a java.lang.Object)
+	- locked <0x00000000d7163cb0> (a java.lang.Object)
+	at link.bosswang.test.Main$$Lambda$2/2093631819.run(Unknown Source)
+	at java.lang.Thread.run(Thread.java:748)
+"Thread-0":
+	at link.bosswang.test.Main.lambda$main$0(Main.java:25)
+	- waiting to lock <0x00000000d7163cb0> (a java.lang.Object)
+	- locked <0x00000000d7163ca0> (a java.lang.Object)
+	at link.bosswang.test.Main$$Lambda$1/1023892928.run(Unknown Source)
+	at java.lang.Thread.run(Thread.java:748)
+
+Found 1 deadlock.
+
+```
