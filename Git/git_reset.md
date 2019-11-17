@@ -83,3 +83,37 @@ reset 做的第一件事是移动 HEAD 的指向。 这与改变 HEAD 自身不同（checkout 所做的）
 + reset 要做的的第三件事情就是让工作目录看起来像索引。 如果使用 --hard 选项，它将会继续这一步。图示如下:
    <div><img src="./pics/reset/reset_hard.png"></div>
 + 必须注意，--hard 标记是 reset 命令唯一的危险用法，它也是 Git 会真正地销毁数据的仅有的几个操作之一。其他任何形式的 reset 调用可以轻松撤消，但是 --hard 选项不能，因为它强制覆盖了工作目录中的文件。在这种特殊情况下，我们的 Git 数据库中的一个提交内还留有该文件的 v3 版本，我们可以通过 reflog 来找回它。但是若该文件还未提交，Git 仍会覆盖它从而导致无法恢复。
+
+### 根据路径来重置
+若指定了一个路径，reset 将会跳过第 1 步，并且将它的作用范围限定为指定的文件或文件集合。 这样做自然有它的道理，因为 HEAD 只是一个指针，你无法让它同时指向两个提交中各自的一部分。 不过索引和工作目录 可以部分更新，所以重置会继续进行第 2、3 步
++ 例如：运行 git reset file.txt （这其实是 git reset --mixed HEAD file.txt 的简写形式，因为你既没有指定一个提交的 SHA-1 或分支，也没有指定 --soft 或 --hard），它会：
+  1. 移动 HEAD 分支的指向 （已跳过）
+  2. 让索引看起来像 HEAD （到此处停止）
+  3. 本质：所以它本质上只是将 file.txt 从 HEAD 复制到索引中。
++ git reset file.txt  图示如下
+     <div><img src="./pics/reset/reset_file.png"></div>
+     - 与git add图示相比较，你会发现该命令有取消暂存的效果。但是实时是：这个命令确实有
+#### 使用git reset来获取任意一个提交中的指定文件
+我们可以不让 Git 从 HEAD 拉取数据，而是通过具体指定一个提交来拉取该文件的对应版本。 我们只需运行类似
+于 git reset **eb43bf** file.txt 的命令即可
+
+### reset 与 checkout的区别
+和 reset 一样，checkout 也操纵三棵树，不过它有一点不同，这取决于你是否传给该命令一个文件路径。
+####  不带路径
+运行 git checkout [branch] 与运行 git reset --hard [branch] 非常相似，它会更新所有三棵树使其看起来像 [branch]，不过有两点重要的区别。
+1. 首先不同于 reset --hard，checkout 对工作目录是安全的，**它会通过检查来确保不会将已更改的文件弄丢**。 其实它还更聪明一些。它会在工作目录中先试着简单合并一下，这样所有_还未修改过的_文件都会被更新。 而 reset --hard 则会不做检查就全面地替换所有东西。
+2. 第二个重要的区别是如何更新 HEAD。 reset 会移动 HEAD 分支的指向，而 checkout 只会移动 HEAD 自身来
+指向另一个分支
+   - 例如，假设我们有 master 和 develop 分支，它们分别指向不同的提交；我们现在在 develop 上（所以HEAD 指向它）。 如果我们运行 git reset master，那么 develop 自身现在会和 master 指向同一个提交。 而如果我们运行 git checkout master 的话，develop 不会移动，HEAD 自身会移动。 现在 HEAD 将会指向 master。
+   - 所以，虽然在这两种情况下我们都移动 HEAD 使其指向了提交 A，但_做法_是非常不同的。 reset 会移动HEAD 分支的指向，而 checkout 则移动 HEAD 自身
+   - 图示:
+      <div><img src="./pics/reset/reset_checkout.png"></div>
+#### 带路径
+运行 checkout 的另一种方式就是指定一个文件路径，这会像 reset 一样不会移动 HEAD。 它就像 git
+reset [branch] file 那样用该次提交中的那个文件来更新索引，但是它也会覆盖工作目录中对应的文件。
+它就像是 git reset --hard [branch] file（如果 reset 允许你这样运行的话）- 这样对工作目录并不安全，它也不会移动 HEAD。此外，同 git reset 和 git add 一样，checkout 也接受一个 --patch 选项，允许你根据选择一块一块地恢复文件内容
+  + 区别
+     1. git checkout file与git reset file(其实 --mixed)相比，git checkout不仅会使用该此提交的文件来更新Index区，还会更新工作目录中相对应的文件。
+     2. git checkout file不仅会更新Index区，还会更新工作目录，这样对于项目来说是不安全的
+  + 同:
+     1. 均会更新Index区
