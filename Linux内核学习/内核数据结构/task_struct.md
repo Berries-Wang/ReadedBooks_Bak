@@ -490,7 +490,7 @@
 + 我的理解
   1. 同一线程组内，线程（轻量级**进程**）的pid值不一致，tgid一致。[正确]
   2. 领头的线程的pid与tgid一致
-#### pidmap_array(PID位图)
+##### pidmap_array(PID位图)
 + 由于循环使用PID编号，内核必须通过管理一个pidmap_array位图来表示当前已分配的PID号和闲置的PID号。pidmap_arra会被系统一直保存在系统的页中不被释放
 ### 3.进程描述符处理 void *stack;
 对于每一个进程来说，Linux都把两个不同的数据结构紧凑的放在一个单独为进程分配的存储区域内.一个是与进程描述符相关的小数据结构thread_info(线程描述符);另一个是内核态的进程堆栈。这块存储区域的大小通常为8192个字节(两个页框)。
@@ -501,7 +501,7 @@
     - 为了只要通过栈指针就能计算出他的位置，避免使用额外的寄存器专门记录。即只需要检查栈就可以获得当前正确的进程
 + 分别通过task和thread_info字段使得thread_info和task_struct结构相互关联
 + thread_info结构和进程内核栈存放在两个连续的页框中
-#### 代码如何显示
+#### 代码分析
 + C语言使用联合结构表示一个进程的线程描述符和内核栈(include/linux/sched.h)
     ```c
     //#define THREAD_SIZE		(PAGE_SIZE << THREAD_SIZE_ORDER) //文件 arch/score/include/asm/thread_info.h
@@ -522,3 +522,117 @@
     }
     ```
     - 内核使用alloc_thread_info和free_thread_info宏(新版内核使用函数来完成这两个动作)分配和释放存储thread_info结构和内核栈的内存区
+    ```c
+        # if THREAD_SIZE >= PAGE_SIZE
+        static struct thread_info *alloc_thread_info_node(struct task_struct *tsk,
+                                int node)
+        {
+            struct page *page = alloc_kmem_pages_node(node, THREADINFO_GFP,
+                                THREAD_SIZE_ORDER);
+
+            return page ? page_address(page) : NULL;
+        }
+
+        static inline void free_thread_info(struct thread_info *ti)
+        {
+            free_kmem_pages((unsigned long)ti, THREAD_SIZE_ORDER);
+        }
+        # else
+        static struct kmem_cache *thread_info_cache;
+
+        static struct thread_info *alloc_thread_info_node(struct task_struct *tsk,
+                                int node)
+        {
+            return kmem_cache_alloc_node(thread_info_cache, THREADINFO_GFP, node);
+        }
+
+        static void free_thread_info(struct thread_info *ti)
+        {
+            kmem_cache_free(thread_info_cache, ti);
+        }
+
+        void thread_info_cache_init(void)
+        {
+            thread_info_cache = kmem_cache_create("thread_info", THREAD_SIZE,
+                                THREAD_SIZE, 0, NULL);
+            BUG_ON(thread_info_cache == NULL);
+        }
+        # endif
+    ```
+### 4. 进程标记  unsigned int flags;
++ 反映进程的状态，但并不是运行状态，用于内核识别进程当前的状态，以备下一步操作
++ 可以取的值:
+```c
+    /*
+    * Per process flags
+    */
+    #define PF_EXITING	0x00000004	/* getting shut down 进程开始关闭*/
+    #define PF_EXITPIDONE	0x00000008	/* pi exit done on shut down */
+    #define PF_VCPU		0x00000010	/* I'm a virtual CPU */
+    #define PF_WQ_WORKER	0x00000020	/* I'm a workqueue worker */
+    #define PF_FORKNOEXEC	0x00000040	/* forked but didn't exec 进程刚创建，但还没执行*/
+    #define PF_MCE_PROCESS  0x00000080      /* process policy on mce errors */
+    #define PF_SUPERPRIV	0x00000100	/* used super-user privileges  超级用户特权*/
+    #define PF_DUMPCORE	0x00000200	/* dumped core 标识进程是否清空core文件*/
+    #define PF_SIGNALED	0x00000400	/* killed by a signal 进程被信号(signal)杀出*/
+    #define PF_MEMALLOC	0x00000800	/* Allocating memory 进程分配内存标识 */
+    #define PF_NPROC_EXCEEDED 0x00001000	/* set_user noticed that RLIMIT_NPROC was exceeded */
+    #define PF_USED_MATH	0x00002000	/* if unset the fpu must be initialized before use */
+    #define PF_USED_ASYNC	0x00004000	/* used async_schedule*(), used by module init */
+    #define PF_NOFREEZE	0x00008000	/* this thread should not be frozen */
+    #define PF_FROZEN	0x00010000	/* frozen for system suspend */
+    #define PF_FSTRANS	0x00020000	/* inside a filesystem transaction */
+    #define PF_KSWAPD	0x00040000	/* I am kswapd */
+    #define PF_MEMALLOC_NOIO 0x00080000	/* Allocating memory without IO involved */
+    #define PF_LESS_THROTTLE 0x00100000	/* Throttle me less: I clean memory */
+    #define PF_KTHREAD	0x00200000	/* I am a kernel thread */
+    #define PF_RANDOMIZE	0x00400000	/* randomize virtual address space */
+    #define PF_SWAPWRITE	0x00800000	/* Allowed to write to swap */
+    #define PF_NO_SETAFFINITY 0x04000000	/* Userland is not allowed to meddle with cpus_allowed */
+    #define PF_MCE_EARLY    0x08000000      /* Early kill for mce process policy */
+    #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
+    #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezable */
+    #define PF_SUSPEND_TASK 0x80000000      /* this thread called freeze_processes and should not be frozen */
+```
+### 5 进程亲属关系
+```c
+    /*
+        * pointers to (original) parent process, youngest child, younger sibling,
+        * older sibling(兄弟姐妹), respectively.  (p->father can be replaced with
+        * p->real_parent->pid)
+        */
+        struct task_struct __rcu *real_parent; /* real parent process  指向其父进程，如果创建他的父进程不存在,那么就会指向pid为1的init进程*/
+        struct task_struct __rcu *parent; /* recipient of SIGCHLD, wait4() reports 指向其父进程，当他终止时，必须要向他的父进程发送信号。他的值通常与real_parent相同*/
+        /*
+        * children/sibling forms the list of my natural children
+        */
+        struct list_head children;	/* list of my children  表示链表的头部，链表中的元素都是他的子进程*/
+        struct list_head sibling;	/* linkage in my parent's children list 用于将当前进程插入到兄弟链表中*/
+        struct task_struct *group_leader;	/* threadgroup leader  指向该进程所在线程组的领头进程*/
+```
+### 6. ptrace系统调用  
++ 父进程可以控制子进程运行，并且可以检查和改变他的核心image
+   - 主要用来断点调试
+```c
+    unsigned int ptrace;
+    /*
+	 * ptraced is the list of tasks this task is using ptrace on.
+	 * This includes both natural children and PTRACE_ATTACH targets.
+	 * p->ptrace_entry is p's link on the p->parent->ptraced list.
+	 */
+	struct list_head ptraced;
+	struct list_head ptrace_entry;
+
+    unsigned long ptrace_message;
+	siginfo_t *last_siginfo; /* For ptrace use.  */
+```
+### 7.性能诊断工具Performance Event
+Performance Event是一款随 Linux 内核代码一同发布和维护的性能诊断工具。这些成员用于帮助PerformanceEvent分析进程的性能问题
+```c
+    #ifdef CONFIG_PERF_EVENTS
+        struct perf_event_context *perf_event_ctxp[perf_nr_task_contexts];
+        struct mutex perf_event_mutex;
+        struct list_head perf_event_list;
+    #endif
+```
+### 进程调度相关
