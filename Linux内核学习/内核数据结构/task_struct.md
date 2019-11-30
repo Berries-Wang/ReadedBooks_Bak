@@ -1,3 +1,4 @@
+[toc]
 ## task_struct(进程描述符)
 +  内核版本4.5.1
 ### task_struct结构体
@@ -105,8 +106,8 @@
 
         struct restart_block restart_block;
 
-        pid_t pid;
-        pid_t tgid;
+        pid_t pid; //进程描述符
+        pid_t tgid; //线程组id，一个线程组所有线程与领头线程具有相同的pid。getpid()返回该字段的值
 
     #ifdef CONFIG_CC_STACKPROTECTOR
         /* Canary value for the -fstack-protector gcc feature */
@@ -476,3 +477,48 @@
 
 2.  
 <div><img src = "./pics/process_state.png"/></div>
+
+### 2. pid进程标识符
++ Unix系统允许用户使用一个叫进程标识符(process ID),即PID，来标识进程。PID存放在进程描述符(task_struct)的pid字段中。PID被顺序编号。
++ Linux把不同的PID与系统中的每个进程或者轻量级进程相关联，这样保证了系统中每个执行上下文都可以被唯一识别
+   - pid是唯一的
+   - 每一个进程都是唯一的
++ Unix系统的程序员**希望**同一组中的线程有共同的PID。例如：应该可以将信号发送到指定PID的一组线程，这个信号会作用于该组中所有的线程。**POSIX 1003.1c标准规定了一个多线程应用程序中的所有线程都必须有相同的PID**
+   - Linux线程组的概念(为了遵守POSIX 1003.1c标准，因此引入了tgid这个字段)
+     1. Linux中线程组的表示:一个线程组中所有的线程使用和该线程组领头线程(thread group leader)相同的PID，也就是该组中的第一个轻量级进程的PID，他被存入进程描述符的tgid字段中。getpid()系统调用返回的是当前进程的tgid值而不是pid的值。
+     2. 因第一点，现在所有的线程共享相同的PID。线程组的领头线程其pid与tgid的值相同
++ 我的理解
+  1. 同一线程组内，线程（轻量级**进程**）的pid值不一致，tgid一致。[正确]
+  2. 领头的线程的pid与tgid一致
+#### pidmap_array(PID位图)
++ 由于循环使用PID编号，内核必须通过管理一个pidmap_array位图来表示当前已分配的PID号和闲置的PID号。pidmap_arra会被系统一直保存在系统的页中不被释放
+### 3.进程描述符处理 void *stack;
+对于每一个进程来说，Linux都把两个不同的数据结构紧凑的放在一个单独为进程分配的存储区域内.一个是与进程描述符相关的小数据结构thread_info(线程描述符);另一个是内核态的进程堆栈。这块存储区域的大小通常为8192个字节(两个页框)。
+#### 在内存区存放两种数据结构的方式 ， 如下图
+<div><img src="./pics/stack*.png"/></div>  
+
++  线程描述符驻留在这个内存区域的开始，而栈从末端开始向下增长。
+    - 为了只要通过栈指针就能计算出他的位置，避免使用额外的寄存器专门记录。即只需要检查栈就可以获得当前正确的进程
++ 分别通过task和thread_info字段使得thread_info和task_struct结构相互关联
++ thread_info结构和进程内核栈存放在两个连续的页框中
+#### 代码如何显示
++ C语言使用联合结构表示一个进程的线程描述符和内核栈(include/linux/sched.h)
+    ```c
+    //#define THREAD_SIZE		(PAGE_SIZE << THREAD_SIZE_ORDER) //文件 arch/score/include/asm/thread_info.h
+    union thread_union {
+        struct thread_info thread_info;
+        unsigned long stack[THREAD_SIZE/sizeof(long)];
+    };
+
+    //.....
+    //从这两个宏来看联合体的使用
+    #define task_thread_info(task)	((struct thread_info *)(task)->stack)
+    #define task_stack_page(task)	((task)->stack)
+
+    static inline void setup_thread_stack(struct task_struct *p, struct task_struct *org)
+    {
+        *task_thread_info(p) = *task_thread_info(org);
+        task_thread_info(p)->task = p;
+    }
+    ```
+    - 内核使用alloc_thread_info和free_thread_info宏(新版内核使用函数来完成这两个动作)分配和释放存储thread_info结构和内核栈的内存区
