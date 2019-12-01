@@ -636,3 +636,93 @@ Performance Event是一款随 Linux 内核代码一同发布和维护的性能�
     #endif
 ```
 ### 进程调度相关
+#### 优先级
+```c
+    /*
+       prio:动态优先级。prio 的值是调度器最终使用的优先级数值，即调度器选择一个进程时实际选择的值。prio 值越小，表明进程的优先级越高
+       static_prio:静态优先级，内核不会主动修改它，只能通过nice系统调用来设置
+       normal_prio:归一化优先级，值取决于静态优先级和调度策略。
+
+       rt_priority:用于保存实时优先级
+    */
+    int prio, static_prio, normal_prio;
+	unsigned int rt_priority;
+```
+#### 调度策略相关
+```c
+    // 调度类
+    const struct sched_class *sched_class;
+    //普通进程的调用实体，每个进程都有其中之一的实体 ？
+	struct sched_entity se;
+	//实时进程的调用实体，每个进程都有其中之一的实体
+    struct sched_rt_entity rt;
+
+    // 调度策略
+    unsigned int policy;
+    //可使用的cpu的个数
+	int nr_cpus_allowed;
+    //用户控制进程可以在哪些cpu上运行
+	cpumask_t cpus_allowed;
+```
+##### 调度策略的种类  unsigned int policy;
+```c
+    /**
+    * Scheduling policies
+    */
+    //（也叫SCHED_OTHER）用于普通进程，通过CFS调度器实现。SCHED_BATCH用于非交互的处理器消耗型进程。SCHED_IDLE是在系统负载很低时使用
+    #define SCHED_NORMAL		0
+    /*
+      先入先出调度算法（实时调度策略），相同优先级的任务先到先服务，高优先级的任务可以抢占低优先级的任务 
+    */
+    #define SCHED_FIFO		1
+    /*
+     轮流调度算法（实时调度策略），后 者提供 Roound-Robin 语义，采用时间片，相同优先级的任务当用完时间片会被放到队列尾部，以保证公平性，同样，高优先级的任务可以抢占低优先级的任务。不同要求的实时任务可以根据需要用sched_setscheduler()API 设置策略
+    */
+    #define SCHED_RR		2
+    /*
+    SCHED_NORMAL普通进程策略的分化版本。采用分时策略，根据动态优先级(可用nice()API设置），分配 CPU 运算资源。注意：这类进程比上述两类实时进程优先级低，换言之，在有实时进程存在时，实时进程优先调度。但针对吞吐量优化
+    */
+    #define SCHED_BATCH		3
+    /* SCHED_ISO: reserved but not implemented yet */
+    /*
+    优先级最低，在系统空闲时才跑这类进程(如利用闲散计算机资源跑地外文明搜索，蛋白质结构分析等任务，是此调度策略的适用者）
+    */
+    #define SCHED_IDLE		5
+    /*
+       新支持的实时进程调度策略，针对突发型计算，且对延迟和完成时间高度敏感的任务适用。基于Earliest Deadline First (EDF) 调度算法
+    */
+    #define SCHED_DEADLINE		6
+
+    /* Can be ORed in to make sure the process is reverted back to SCHED_NORMAL on fork */
+    #define SCHED_RESET_ON_FORK     0x40000000
+
+    /*
+    * For the sched_{set,get}attr() calls
+    */
+    #define SCHED_FLAG_RESET_ON_FORK	0x01
+
+```
+ ##### 调度器类  const struct sched_class *sched_class;
+ + rt: real-time
+ ```c
+    /*
+    优先级最高的线程，会中断所有其他线程，且不会被其他任务打断。作用：1.发生在cpu_stop_cpu_callback 进行cpu之间任务migration；2.HOTPLUG_CPU的情况下关闭任务。
+    */
+    extern const struct sched_class stop_sched_class;
+    /*
+      deadline调度类，实时调度中较高级别的调度类型，一般之后在系统紧急情况下会调用；
+    */
+    extern const struct sched_class dl_sched_class;
+    /*
+       RT，作用：实时线程
+    */
+    extern const struct sched_class rt_sched_class;
+    /*
+      CFS（公平），作用：一般常规线程
+    */
+    extern const struct sched_class fair_sched_class;
+    /*
+    每个cup的第一个pid=0线程：swapper，是一个静态线程。调度类属于：idel_sched_class，所以在ps里面是看不到的。一般运行在开机过程和cpu异常的时候做dump
+    */
+    extern const struct sched_class idle_sched_class;
+ ```
