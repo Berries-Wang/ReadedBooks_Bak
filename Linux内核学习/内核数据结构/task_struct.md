@@ -1,4 +1,3 @@
-[toc]
 ## task_struct(进程描述符)
 +  内核版本4.5.1
 ### task_struct结构体
@@ -726,3 +725,132 @@ Performance Event是一款随 Linux 内核代码一同发布和维护的性能�
     */
     extern const struct sched_class idle_sched_class;
  ```
+ + 优先级:Scheduling Class的优先级顺序为StopTask > RealTime > Fair > IdleTask
+##### 进程地址空间
+```c
+/**
+    url:https://www.kernel.org/doc/Documentation/vm/active_mm.txt
+    https://www.cnblogs.com/Rofael/archive/2013/04/13/3019153.html
+    mm:进程所拥有的用户空间内存描述符，内核进程mm为NULL
+    active_mm: 
+*/
+	struct mm_struct *mm, *active_mm;
+	/* per-thread vma caching */
+	u32 vmacache_seqnum;
+	struct vm_area_struct *vmacache[VMACACHE_SIZE];
+
+    #if defined(SPLIT_RSS_COUNTING)
+            struct task_rss_stat	rss_stat;
+    #endif
+
+    #ifdef CONFIG_COMPAT_BRK
+	   unsigned brk_randomized:1;
+    #endif
+
+    /**
+    对Linux来说，用户进程和内核线程（kernel thread)都是task_struct的实例，唯一的区别是kernel thread是没有进程地址空间的，内核线程也没有mm描述符的，所以内核线程的tsk->mm域是空（NULL）。内核scheduler在进程context switching的时候，会根据tsk->mm判断即将调度的进程是用户进程还是内核线程。但是虽然thread thread不用访问用户进程地址空间，但是仍然需要page table来访问kernel自己的空间。但是幸运的是，对于任何用户进程来说，他们的内核空间都是100%相同的，所以内核可以’borrow'上一个被调用的用户进程的mm中的页表来访问内核地址，这个mm就记录在active_mm。
+     1. 内核进程不访问用户进程地址空间
+     2. 内核进程没有进程地址空间
+     3. 内核进程需要访问内核空间。内核进程需要使用页表(task_struct->active_mm)来访问内核空间
+    */
+```
++ **CONFIG_COMPAT_BRK**: 内核中brk相关的变量很多指的都是堆（heap），这个配置选项 “CONFIG_COMPAT_BRK=y means that heap randomization is turned off, so it's *always* a safe choice.  I assume the help text is trying to say that if one does not run ancient binaries, then enabling heap randomization is safe.”所以该配置=y指的是关闭堆地址空间随机化技术来支持一些老的binary（COMPAT选项一般都是向后兼容的选项)
++ 解释
+  - mm: 进程所拥有的用户空间内存描述符，内核线程无的mm为NULL
+  - active_mm: active_mm指向进程运行时所使用的内存描述符
+  - brk_randomized: 用来确定对随机堆内存的探测 --> http://lkml.iu.edu/hypermail/linux/kernel/1104.1/00196.html
+  - rss_stat: 用来记录缓冲信息
+##### 判断标识
+```c
+    int exit_code, exit_signal;
+	int pdeath_signal;  /*  The signal sent when the parent dies  */
+	unsigned long jobctl;	/* JOBCTL_*, siglock protected */
+
+	/* Used for emulating ABI behavior of previous Linux versions */
+	unsigned int personality;
+
+	/* scheduler bits, serialized by scheduler locks */
+	unsigned sched_reset_on_fork:1;
+	unsigned sched_contributes_to_load:1;
+	unsigned sched_migrated:1;
+	unsigned :0; /* force alignment to the next boundary */
+
+	/* unserialized, strictly 'current' */
+	unsigned in_execve:1; /* bit to tell LSMs we're in execve */
+	unsigned in_iowait:1;
+```
++ exit_code:用于设置进程的终止代号，这个值要么是_exit()或exit_group()系统调用参数（正常终止），要么是由内核提供的一个错误代号（异常终止）
++ exit_signal:用于设置进程的终止代号，这个值要么是_exit()或exit_group()系统调用参数（正常终止），要么是由内核提供的一个错误代号（异常终止）
++ jobctl:
++ personality:用于处理不同的API
++ sched_reset_on_fork:用于判断是否恢复默认的优先级或调度策略
++ sched_contributes_to_load:
++ sched_migrated:
++ in_execve:于通知LSM是否被do_execve()函数所调用
++ in_iowait:用于判断是否进行iowait计数
++ pdeath_signal:用于判断父进程终止时发送信号。
+##### 时间
+```c
+	cputime_t utime, stime, utimescaled, stimescaled;
+	cputime_t gtime;
+	struct prev_cputime prev_cputime;
+#ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
+	seqcount_t vtime_seqcount;
+	unsigned long long vtime_snap;
+	enum {
+		/* Task is sleeping or running in a CPU with VTIME inactive */
+		VTIME_INACTIVE = 0,
+		/* Task runs in userspace in a CPU with VTIME active */
+		VTIME_USER,
+		/* Task runs in kernelspace in a CPU with VTIME active */
+		VTIME_SYS,
+	} vtime_snap_whence;
+#endif
+	unsigned long nvcsw, nivcsw; /* context switch counts */
+	u64 start_time;		/* monotonic time in nsec */
+	u64 real_start_time;	/* boot based time in nsec */
+/* mm fault and swap info: this can arguably be seen as either mm-specific or thread-specific */
+	unsigned long min_flt, maj_flt;
+
+	struct task_cputime cputime_expires;
+	struct list_head cpu_timers[3];
+
+/* process credentials */
+	const struct cred __rcu *real_cred; /* objective and real subjective task
+					 * credentials (COW) */
+	const struct cred __rcu *cred;	/* effective (overridable) subjective task
+					 * credentials (COW) */
+	char comm[TASK_COMM_LEN]; /* executable name excluding path
+				     - access with [gs]et_task_comm (which lock
+				       it with task_lock())
+				     - initialized normally by setup_new_exec */
+/* file system info */
+	struct nameidata *nameidata;
+#ifdef CONFIG_SYSVIPC
+/* ipc stuff */
+	struct sysv_sem sysvsem;
+	struct sysv_shm sysvshm;
+#endif
+#ifdef CONFIG_DETECT_HUNG_TASK
+/* hung task detection */
+	unsigned long last_switch_count;
+```
+
+##### 信号处理
+```c
+    struct signal_struct *signal;
+	struct sighand_struct *sighand;
+
+	sigset_t blocked, real_blocked;
+	sigset_t saved_sigmask;	/* restored if set_restore_sigmask() was used */
+	struct sigpending pending;
+
+	unsigned long sas_ss_sp;
+	size_t sas_ss_size;
+```
++ signal	指向进程的信号描述符
++ sighand	指向进程的信号处理程序描述符
++ blocked	表示被阻塞信号的掩码，real_blocked表示临时掩码
++ pending	存放私有挂起信号的数据结构
++ sas_ss_sp	是信号处理程序备用堆栈的地址，sas_ss_size表示堆栈的大小
+##### 其他，待补充
