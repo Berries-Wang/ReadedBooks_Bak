@@ -80,6 +80,6 @@ public class MethodHandle {
 ##### invokeDynamic指令原理
 + 每一处由invokedynamic指令的位置都称为动态调用点，这条字节码指令的第一个参数不再是代表该方法符号引用的CONSTANT_Methodref_info常量，而是CONSTANT_InvokeDynamic_info常量。从这个常量中可以得到信息:
 1. 引导方法(Bootstrap Mehthod ，BSM),此方法存放在新增的BootstrapMethods属性中。
-    - 引导方法有固定的参数(是什么)，并且返回值是java.lang.invoke.CallSite对象，代表着真正要执行的目标方法调用。根据CONSTANT_InvokeDynamic_info常量提供的信息，虚拟机可以找到并执行引导方法，从而获得一个CallSite对象，最终调用要执行的方法。
+    - 引导方法有固定的参数，并且返回值是java.lang.invoke.CallSite对象，代表着真正要执行的目标方法调用。根据CONSTANT_InvokeDynamic_info常量提供的信息，虚拟机可以找到并执行引导方法，从而获得一个CallSite对象，最终调用要执行的方法。
 2. 方法类型(MethodType)
 3. 名称
