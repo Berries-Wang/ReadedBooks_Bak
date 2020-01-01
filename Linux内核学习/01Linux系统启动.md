@@ -1,4 +1,7 @@
 # Linux系统启动
+## 启动方式
++ BIOS + MBR + GRUB
++ 当然，还有其他的搭配方式
 ## 整体流程
 <img src="./pics/init.png"/>
 
