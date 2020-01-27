@@ -12,3 +12,5 @@
   + Java虚拟机的及时编译器中也有类似的指令重排优化
 - 计算机级别的内存模型
    + <div> <img src="./pics/mem_model_computer.png"/></div>
+
+## Java 内存模型
