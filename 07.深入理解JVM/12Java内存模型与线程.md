@@ -209,7 +209,8 @@ public class FieldVidibility {
 1. 单线程原则 
    + 在同一个线程内部，不论该线程内部是否发生重排序，后面的代码一定能够看到前面的代码的执行效果
 2. 锁操作原则
-   + 
+   + 解锁之前的代码执行效果对于加锁之后的代码都是可见的
+   + <img src ="./jmm_pics/happens-before-lock.jpeg"/>
 3. volatile变量
    + 只要这个变量被volatile修饰，线程A对这个变量修改了，那么线程B就立马可以看得到(内存屏障)
 4. 线程启动
