@@ -503,3 +503,53 @@ public class FieldVidibility {
 3. java.concurrent.Atomic.*包中所有类的原子操作
 ##### long,double的原子性
 + 在32位的jvm上，long和double的操作不是原子的，但是在64位的机器上是原子的
+#### 单例模式
+##### double-check模式的单例模式
++ 代码
+```java
+     /**
+     * 双重锁校验的单例模式
+     */
+     public class SingletonDoubleCheck {
+
+     /**
+          * 单例对象 ， 注意，这里需要使用volatile修饰
+          */
+     private static volatile SingletonDoubleCheck singletonDoubleCheck;
+
+     /**
+          * 单例模式，构造方法私有化
+          */
+     private SingletonDoubleCheck() {
+
+     }
+
+     /**
+          * 获取单例对象方法
+          *
+          * @return 单例对象
+          */
+     public static SingletonDoubleCheck getInstance() {
+
+          if (null == SingletonDoubleCheck.singletonDoubleCheck) { // 第一重校验
+               synchronized (SingletonDoubleCheck.class) {
+                    if (null == SingletonDoubleCheck.singletonDoubleCheck) { // 第二重校验
+                         SingletonDoubleCheck.singletonDoubleCheck = new SingletonDoubleCheck();
+                    }
+               }
+          }
+
+          return SingletonDoubleCheck.singletonDoubleCheck;
+
+     }
+
+     }
+```
+###### 解释，这里仅解释为什么使用volatile修饰单例对象，其他的(双重锁谁不知道呢?)
++ 因：因为jmm的模型(分为工作内存和主存)且jvm创建对象并不是原子操作(见上，jvm中的原子操作)。jvm创建对象分为三步
+    1. 创建空的对象
+    2. 执行构造函数
+    3. 将对象地址赋值给引用变量
++ 故：
+   1. 因为存在指令重排序的存在，这三个步骤的顺序不是固定的，这会造成问题。而volatile就禁止了指令重排，从而避免了这个问题
+   2. volatile的另一个作用就是**可见性**，这就保证了在一个线程中执行之后在其他线程中是可见的。
