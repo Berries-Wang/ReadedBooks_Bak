@@ -1,6 +1,8 @@
 # Node 
 ## 简介
 + [基于Chrome V8引擎的javascript运行环境(Node.js® is a JavaScript runtime built on Chrome's V8 JavaScript engine.摘自nodejs官网)](https://nodejs.org/en/)
++ node中模块是什么
+   - 在node中，一个文件就相当于是一个模块
 ## 架构&&内部运行机制
 ### Node架构方式
 #### 架构图
