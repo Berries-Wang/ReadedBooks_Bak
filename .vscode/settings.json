@@ -1,0 +1,5 @@
+{
+    "markdown-preview-enhanced.codeBlockTheme": "dark.css",
+    "markdown-preview-enhanced.revealjsTheme": "sky.css",
+    "files.autoSave": "afterDelay"
+}
