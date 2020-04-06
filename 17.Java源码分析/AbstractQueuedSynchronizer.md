@@ -1,6 +1,7 @@
-# AbstractQueuedSynchronizer
+# AbstractQueuedSynchronizer（以下均称为AQS）
 ## 功能
 + AQS是一个用于构建锁、同步器、协作工具类的工具类。
++ AQS是一种提供了原子式管理同步状态、阻塞和唤醒功能以及队列模型的简单框架。
 
 ## AQS内部原理解析
 ### 核心一： state(The synchronization state.)
@@ -26,6 +27,9 @@
 ### 1. 写一个类，想好协作的逻辑，实现获取/释放方法
 ### 2. 内部写一个Sync类继承自AQS
 ### 3. 根据是否独占来重写tryAcquire/tryRelease 或 tryAcquireShared/tryReleaseShared等方法，在之前写的获取/释放方法中调用AQS的acquire/release方法或者shared方法
+
+### 分析
+#### 从ReentrantLock来分析AQS
 
 ## 参考资料
 1. [美团技术团队《从ReentrantLock的实现看AQS的原理及应用》](https://mp.weixin.qq.com/s/sA01gxC4EbgypCsQt5pVog)
