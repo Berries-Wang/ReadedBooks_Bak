@@ -7,3 +7,8 @@
 | git log --pretty=oneline|	每一次的提交日志只占用一行|
 | git log --oneline|更加简洁的显示日志|
 | git reflog|有oneline简洁日志的同时显示移动版本步数(所有的记录，包括git reset的)|
+
+## 如何删除远程跟踪分支(前提是 对应的远程分支已经删除了)
++ 若有远程分支: master , a , b , c, git fetch 之后,会对所有的远程分支跟踪,git branch -a 可以看到这四个远程分支的远程跟踪分支,如果远程的a分支被删除了,git branch -a 会发现仍在对a分支远程跟踪,这时候如果想清除无用的远程跟踪分支,需要进行如下两步：
+   1. git remote prune origin --dry-run  // 列出仍在远程跟踪但是远程已被删除的无用分支，上面例子此处应输出  '* [将删除] origin/a'
+   2. git remote prune origin  // 清除上面命令列出来分支的远程跟踪，输出 '* [已删除] origin/a'
