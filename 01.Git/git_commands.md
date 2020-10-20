@@ -27,3 +27,14 @@
    | --relative-date |使用较短的相对时间显示（比如，“2 weeks ago”）。|
    | --graph| 显示 ASCII 图形表示的分支合并历史。|
    | --pretty| 使用其他格式显示历史提交信息。可用的选项包括 oneline，short，full，fuller 和 format（后跟指定格式）。|
+
+### git log --graph 选项
++ --decorate 标记会让git log显示每个commit的引用(如:分支、tag等) 
++ --oneline 一行显示
++ --simplify-by-decoration 只显示被branch或tag引用的commit
++ --all 表示显示所有的branch，这里也可以选择，比如我指向显示分支ABC的关系，则将--all替换为branchA branchB branchC
+#### git log --graph解读
+- \*表示一个commit， 注意不要管*在哪一条主线上
+- |表示分支前进
+- /表示分叉
+- \表示合入
