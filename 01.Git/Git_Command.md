@@ -12,3 +12,18 @@
 + 若有远程分支: master , a , b , c, git fetch 之后,会对所有的远程分支跟踪,git branch -a 可以看到这四个远程分支的远程跟踪分支,如果远程的a分支被删除了,git branch -a 会发现仍在对a分支远程跟踪,这时候如果想清除无用的远程跟踪分支,需要进行如下两步：
    1. git remote prune origin --dry-run  // 列出仍在远程跟踪但是远程已被删除的无用分支，上面例子此处应输出  '* [将删除] origin/a'
    2. git remote prune origin  // 清除上面命令列出来分支的远程跟踪，输出 '* [已删除] origin/a'
+
+##  git log  查看详细的提交日志
+1. git log -p   , -p 用来显示每次提交的内容差异,也可以加上 -2 来仅显示最近两次提交
+
+|选项|说明|
+|---|---|
+| -p  | 按补丁格式显示每个更新之间的差异。|
+| --stat | 显示每次更新的文件修改统计信息。|
+| --shortstat | 只显示 --stat 中最后的行数修改添加移除统计。|
+| --name-only |仅在提交信息后显示已修改的文件清单。|
+| --name-status |显示新增、修改、删除的文件清单。|
+| --abbrev-commit| 仅显示 SHA-1 的前几个字符，而非所有的 40 个字符。|
+| --relative-date |使用较短的相对时间显示（比如，“2 weeks ago”）。|
+| --graph| 显示 ASCII 图形表示的分支合并历史。|
+| --pretty| 使用其他格式显示历史提交信息。可用的选项包括 oneline，short，full，fuller 和 format（后跟指定格式）。|
