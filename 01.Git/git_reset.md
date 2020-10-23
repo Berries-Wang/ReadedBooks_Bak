@@ -120,7 +120,7 @@ reset [branch] file 那样用该次提交中的那个文件来更新索引，但
   + 不同点
      1. git checkout HEAD file 与 git reset file(其实 --mixed)相比，git checkout不仅会使用该此提交的文件来更新Index区，还会更新工作目录中相对应的文件。
      2. git checkout HEAD file 不仅会更新Index区，还会更新工作目录，这样对于项目来说是不安全的
-  + 相同:
+  + 相同点:
      1. 均会更新Index区
 ##### git checkout带路径时携带提交对象id和不携带提交对象id的区别
 + 携带提交对象id,即: git checkout  **HEAD** xxxx文件
