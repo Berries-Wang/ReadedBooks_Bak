@@ -122,3 +122,10 @@ reset [branch] file 那样用该次提交中的那个文件来更新索引，但
      2. git checkout file不仅会更新Index区，还会更新工作目录，这样对于项目来说是不安全的
   + 同:
      1. 均会更新Index区
+##### git checkout带路径时携带提交对象id和不携带提交对象id的区别
++ 携带提交对象id,即: git checkout  **HEAD** xxxx文件
+  - 这种方式会**使用HEAD区的文件覆盖掉Index区和工作空间的文件**,因此,这个操作很危险
+  - 此种情况时的命令输出: Updated 1 path from **d509831**
++ 不携带提交对象id,即: git checkout xxxx文件
+  - 这种方式会**使用Index区的文件覆盖掉工作空间的文件**,这个操作也具有一定危险性.
+  -  此种情况时的命令输出: Updated 1 path from the **index**
